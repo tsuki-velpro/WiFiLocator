@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:padding="16dp">
+
+    <EditText
+            android:id="@+id/et_coordinates"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="输入当前位置坐标"
+            android:inputType="text"/>
+
+    <Button
+            android:id="@+id/btn_collect"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="WiFi采集"/>
+
+    <TextView
+            android:id="@+id/tv_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="状态"/>
+
+    <Button
+            android:id="@+id/btn_export"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="导出文件"/>
+
+    <Button
+            android:id="@+id/btn_clear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="清除数据"/>
+
+    <EditText
+            android:id="@+id/et_max_scan_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="输入最大采集次数(默认10)"
+            android:inputType="number"/>
+
+    <EditText
+            android:id="@+id/et_scan_interval"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="输入采集时间间隔（毫秒，默认1000）"
+            android:inputType="number"/>
+
+</LinearLayout>

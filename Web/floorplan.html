@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indoor Location Display</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+    <style>
+        #map {
+            width: 100%;
+            height: 800px;
+        }
+        .button-container {
+            margin: 10px 0;
+        }
+        button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>室内定位展示</h1>
+    <div class="button-container">
+        <button id="toggle-history">查看历史记录</button>
+        <button id="clear-history">清除历史记录</button>
+    </div>
+    <div id="map"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script>
+        // 初始化地图
+        const map = L.map('map', {
+            crs: L.CRS.Simple, // 简单坐标系
+            minZoom: -1
+        });
+
+        // 加载平面图
+        const bounds = [[0, 0], [1261, 870]]; // 地图坐标范围
+        L.imageOverlay('floorplan.png', bounds).addTo(map);
+        map.fitBounds(bounds);
+
+        // 定义图标样式
+        const redCircleIcon = L.divIcon({
+            className: 'red-circle',
+            html: '<div style="width: 12px; height: 12px; border-radius: 50%; background-color: red; border: 2px solid white;"></div>',
+            iconSize: [12, 12],
+            iconAnchor: [6, 6]
+        });
+
+        const grayCircleIcon = L.divIcon({
+            className: 'gray-circle',
+            html: '<div style="width: 12px; height: 12px; border-radius: 50%; background-color: gray; border: 2px solid white;"></div>',
+            iconSize: [12, 12],
+            iconAnchor: [6, 6]
+        });
+
+        // 定义标记和历史记录
+        let marker = null;
+        let historyMarkers = [];
+        let historyVisible = false;
+
+        const toggleHistoryButton = document.getElementById('toggle-history');
+        const clearHistoryButton = document.getElementById('clear-history');
+
+        // 定时获取定位结果并更新地图
+        function fetchLocation() {
+            fetch('http://127.0.0.1:5000/get_location') // 替换为服务器IP
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+
+                    // 提取定位数据
+                    const location = data.location;
+                    const [x, y] = location.split(',').map(coord => parseFloat(coord.split('=')[1]));
+
+                    if (marker) {
+                        marker.setLatLng([y, x]);
+                    } else {
+                        marker = L.marker([y, x], { icon: redCircleIcon }).addTo(map);
+                    }
+
+                    marker.bindPopup(`Location: (${x}, ${y})`).openPopup();
+
+                    // 将当前点保存为历史记录点
+                    const historyMarker = L.marker([y, x], { icon: grayCircleIcon });
+                    historyMarkers.push(historyMarker);
+
+                    if (historyVisible) {
+                        historyMarker.addTo(map);
+                    }
+                })
+                .catch(err => console.error('Error fetching location:', err));
+        }
+
+        // 每5秒获取一次定位数据
+        setInterval(fetchLocation, 5000);
+
+        // 查看/隐藏历史记录
+        toggleHistoryButton.addEventListener('click', () => {
+            historyVisible = !historyVisible;
+
+            if (historyVisible) {
+                toggleHistoryButton.textContent = '不查看历史记录';
+                historyMarkers.forEach(marker => marker.addTo(map));
+            } else {
+                toggleHistoryButton.textContent = '查看历史记录';
+                historyMarkers.forEach(marker => marker.removeFrom(map));
+            }
+        });
+
+        // 清除历史记录
+        clearHistoryButton.addEventListener('click', () => {
+            historyMarkers.forEach(marker => marker.removeFrom(map));
+            historyMarkers = [];
+        });
+    </script>
+</body>
+</html>
